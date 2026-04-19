@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESLAqua Nexus | EUREKA 2025</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* Estilos Globales y Transiciones */
+        body {
+            transition: background-color 0.5s ease;
+        }
+
+        /* Fuentes por Modo */
+        .font-kids {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .font-science {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Animaciones Modo Niños */
+        .bubble {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .glow {
+            box-shadow: 0 0 20px #fbbf24;
+        }
+
+        /* Estilos Modo Científico */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            height: 300px;
+            max-height: 350px;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-card {
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+            cursor: pointer;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-card.active {
+            border-bottom-color: #0284c7;
+            background-color: #f0f9ff;
+        }
+
+        .circle-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Toggle Switch Estilos */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10B981;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #10B981;
+        }
+
+        /* AI Chat Widget CSS */
+        #tesla-chat-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #0284c7, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 0 15px rgba(16, 185, 129, 0.4);
+            z-index: 1000;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        #tesla-chat-button:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.4), 0 0 25px rgba(16, 185, 129, 0.6);
+        }
+        #tesla-chat-button svg {
+            width: 35px;
+            height: 35px;
+            color: white;
+            animation: pulse-icon 2s infinite;
+        }
+        @keyframes pulse-icon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #tesla-chat-panel {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            width: 360px;
+            max-width: calc(100vw - 40px);
+            height: 520px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.25), border: 1px solid rgba(255,255,255,0.4);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        #tesla-chat-panel.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .chat-header {
+            background: linear-gradient(90deg, #0284c7, #059669);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            /* Glassmorphism */
+            backdrop-filter: blur(5px);
+        }
+        .chat-close {
+            cursor: pointer;
+            font-size: 1.4rem;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .chat-close:hover {
+            opacity: 1;
+        }
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: transparent;
+        }
+        .chat-msg {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            max-width: 85%;
+            line-height: 1.5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-msg.user {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-msg.bot {
+            background: white;
+            color: #1e293b;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .chat-footer {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+            gap: 10px;
+            flex-direction: row;
+            display: flex;
+        }
+        .chat-footer input {
+            flex: 1;
+            padding: 12px 18px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            outline: none;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        .chat-footer input:focus {
+            border-color: #059669;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .chat-footer button {
+            background: linear-gradient(135deg, #0284c7, #059669);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-left: 10px;
+        }
+        .chat-footer button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 10px rgba(5, 150, 105, 0.3);
+        }
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: #f1f5f9;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            color: #64748b;
+            font-style: italic;
+            border-bottom-left-radius: 4px;
+        }
+    </style>
+</head>
+
+<body id="mainBody" class="bg-teal-50 text-gray-800 transition-colors duration-500">
+
+    <!-- FLOATING TOGGLE SWITCH (El botón mágico) -->
+    <div
+        class="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur p-3 rounded-full shadow-2xl border-2 border-gray-200 flex items-center gap-3">
+        <span id="modeLabelKids" class="font-kids text-xl text-blue-500">🧸 Aventura</span>
+
+        <div class="relative inline-block w-16 mr-2 align-middle select-none transition duration-200 ease-in">
+            <input type="checkbox" name="toggle" id="toggleMode"
+                class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-300 transform translate-x-0 z-10" />
+            <label for="toggleMode"
+                class="toggle-label block overflow-hidden h-8 rounded-full bg-blue-400 cursor-pointer"></label>
+        </div>
+
+        <span id="modeLabelScience" class="font-science font-bold text-gray-400 opacity-50">🔬 Ciencia</span>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODO AVENTURA (PÚBLICO GENERAL / NIÑOS)    -->
+    <!-- ========================================== -->
+    <div id="kidsMode" class="block animate-fade-in">
+        <header
+            class="bg-gradient-to-b from-blue-400 to-teal-300 text-white pt-20 pb-20 px-4 text-center rounded-b-[3rem] shadow-lg relative overflow-hidden">
+            <div class="absolute top-10 left-10 text-4xl bubble opacity-50">🫧</div>
+            <div class="absolute top-20 right-20 text-5xl bubble opacity-50" style="animation-delay: 1s;">🐟</div>
+            <h1 class="font-kids text-5xl md:text-7xl drop-shadow-md mb-4">TESLAqua Nexus</h1>
+            <p class="font-kids text-2xl md:text-4xl text-yellow-300 drop-shadow-sm">¡El Filtro Mágico del Río Tumbes!
+            </p>
+        </header>
+
+        <section class="max-w-5xl mx-auto mt-12 px-4">
+            <div
+                class="bg-white rounded-3xl p-8 shadow-xl border-4 border-blue-200 flex flex-col md:flex-row items-center gap-8 font-kids">
+                <div class="text-8xl">🤒🏭</div>
+                <div>
+                    <h2 class="text-3xl text-red-500 mb-4">¡Oh no! El río está enfermito</h2>
+                    <p class="text-xl text-gray-600">Nuestro río tiene "basuritas invisibles" llamadas metales pesados.
+                        ¡Pero tenemos un súper invento de 4 capas para curarlo!</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8 font-kids">
+                <div class="bg-gray-100 p-4 rounded-3xl text-center shadow-md bubble">
+                    <div class="text-5xl mb-2">🥅</div>
+                    <h3 class="text-xl text-gray-700">1. La Red</h3>
+                    <p>Atrapa hojas y piedritas grandes.</p>
+                </div>
+                <div class="bg-amber-100 p-4 rounded-3xl text-center shadow-md bubble" style="animation-delay: 0.2s">
+                    <div class="text-5xl mb-2">🦠⚡</div>
+                    <h3 class="text-xl text-amber-700">2. Bacterias</h3>
+                    <p>Se comen la suciedad y hacen chispitas mágicas.</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-3xl text-center shadow-md bubble text-white"
+                    style="animation-delay: 0.4s">
+                    <div class="text-5xl mb-2">🪨</div>
+                    <h3 class="text-xl text-blue-300">3. El Súper Imán</h3>
+                    <p>Carbón activado que atrapa lo malo.</p>
+                </div>
+                <div class="bg-green-100 p-4 rounded-3xl text-center shadow-md bubble" style="animation-delay: 0.6s">
+                    <div class="text-5xl mb-2">🌱📱</div>
+                    <h3 class="text-xl text-green-700">4. Plantas y Robot</h3>
+                    <p>Limpian el final y envían mensajes.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="max-w-4xl mx-auto mt-16 px-4 mb-20">
+            <div
+                class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-8 shadow-2xl text-white text-center font-kids">
+                <h2 class="text-4xl text-yellow-300 mb-4">¡Magia Eléctrica! ⚡</h2>
+                <p class="text-xl mb-8">¡Toca el botón para que las bacterias coman suciedad y enciendan la luz!</p>
+
+                <div class="bg-white/20 p-6 rounded-2xl border-2 border-white/30 backdrop-blur-sm">
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-10">
+                        <div class="flex flex-col items-center">
+                            <button id="feedBtn" onclick="feedBacteria()"
+                                class="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 font-bold py-4 px-8 rounded-full shadow-lg transform transition active:scale-95 text-2xl border-b-4 border-yellow-600">
+                                ¡Comer Suciedad! 🍔
+                            </button>
+                        </div>
+                        <div class="w-full max-w-xs">
+                            <div class="flex justify-between mb-1"><span class="font-bold">Energía</span><span
+                                    id="energyText">0%</span></div>
+                            <div class="w-full bg-blue-900 rounded-full h-8 border-4 border-blue-300 overflow-hidden">
+                                <div id="energyBar" class="bg-yellow-400 h-8 rounded-full transition-all duration-300"
+                                    style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center text-6xl">
+                            <span id="houseIcon" class="transition-colors duration-500 grayscale">🏠</span>
+                            <div id="riverWater"
+                                class="w-24 h-8 bg-amber-800 rounded-lg mt-2 transition-colors duration-1000 text-xs flex items-center justify-center font-bold">
+                                Agua Sucia</div>
+                        </div>
+                    </div>
+                    <div id="successMessage"
+                        class="hidden mt-6 bg-green-500 text-white p-4 rounded-xl text-2xl animate-bounce">
+                        ¡YAY! 🎉 ¡Río limpio y luz GRATIS!
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- MODO CIENTÍFICO (JURADOS EUREKA 2025)      -->
+    <!-- ========================================== -->
+    <div id="scienceMode" class="hidden font-science bg-slate-50 min-h-screen">
+        <header class="pt-28 pb-16 bg-slate-900 text-white border-b-8 border-emerald-500">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <span
+                    class="inline-block py-1 px-3 rounded-full bg-slate-800 text-emerald-400 text-sm font-semibold tracking-wider mb-4 border border-slate-700">
+                    FERIA EUREKA 2025 - ÁREA DE ALTERNATIVA DE SOLUCIÓN TECNOLÓGICA
+                </span>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
+                    TESLAqua Nexus: <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">Prototipo
+                        Bioelectroquímico Inteligente</span>
+                </h1>
+                <p class="mt-4 max-w-3xl mx-auto text-xl text-slate-300 font-light">
+                    Remediación de agua contaminada por metales pesados y recuperación energética (IoT) en la cuenca
+                    transfronteriza Puyango–Tumbes.
+                </p>
+            </div>
+        </header>
+
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900 mb-2">Planteamiento del Problema</h2>
+                        <div class="w-16 h-1 bg-red-500 mb-6"></div>
+                        <p class="text-slate-600 mb-4 text-justify">
+                            La región Tumbes enfrenta una crisis hídrica severa, reconocida en el <strong>Plan de Acción
+                                MINAM 2026–2030</strong>. La cuenca Puyango-Tumbes sufre contaminación transfronteriza
+                            por minería artesanal (aportando Plomo, Cadmio y Arsénico), además de vertimientos agrícolas
+                            y urbanos.
+                        </p>
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                            <p class="font-semibold text-red-800 text-sm">JUSTIFICACIÓN DEL PROBLEMA:</p>
+                            <p class="text-slate-700 text-sm italic mt-1">Los métodos tradicionales de filtrado físico
+                                son insuficientes para separar metales pesados disueltos a nivel iónico, lo que
+                                representa un riesgo letal (bioacumulación) para comunidades como Rica Playa.</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="contaminationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 bg-slate-100">
+            <div class="max-w-7xl mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center text-slate-900 mb-2">Arquitectura de la Solución
+                    (Multibarrera)</h2>
+                <div class="w-16 h-1 bg-sky-500 mx-auto mb-10"></div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-8 text-sm text-slate-700">
+                    <strong>Evolución del Proyecto:</strong> A diferencia de filtros caseros simples (proyectos
+                    anteriores), TESLAqua Nexus integra procesos físicos, biológicos y electrónicos. <strong>El carbón
+                        activado ya no actúa solo</strong>, sino como complemento post-metabólico en la celda
+                    microbiana.
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="module-card active p-4 bg-white border rounded shadow-sm text-center"
+                        onclick="showMod(1, this)">
+                        <div
+                            class="w-10 h-10 mx-auto bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 mb-2">
+                            1</div>
+                        <h4 class="font-bold text-xs">Decantación FÍSICA</h4>
+                    </div>
+                    <div class="module-card p-4 bg-white border rounded shadow-sm text-center"
+                        onclick="showMod(2, this)">
+                        <div
+                            class="w-10 h-10 mx-auto bg-amber-100 rounded-full flex items-center justify-center font-bold text-amber-600 mb-2">
+                            2</div>
+                        <h4 class="font-bold text-xs">Celda MICROBIANA (MFC)</h4>
+                    </div>
+                    <div class="module-card p-4 bg-white border rounded shadow-sm text-center"
+                        onclick="showMod(3, this)">
+                        <div
+                            class="w-10 h-10 mx-auto bg-slate-800 rounded-full flex items-center justify-center font-bold text-white mb-2">
+                            3</div>
+                        <h4 class="font-bold text-xs">Adsorción QUÍMICA</h4>
+                    </div>
+                    <div class="module-card p-4 bg-white border rounded shadow-sm text-center"
+                        onclick="showMod(4, this)">
+                        <div
+                            class="w-10 h-10 mx-auto bg-emerald-100 rounded-full flex items-center justify-center font-bold text-emerald-600 mb-2">
+                            4</div>
+                        <h4 class="font-bold text-xs">Telemetría IoT</h4>
+                    </div>
+                </div>
+
+                <div id="scienceModuleDetails" class="bg-white p-6 rounded border shadow">
+                    <!-- Inject via JS -->
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Hipótesis y Resultados Proyectados</h2>
+                <div class="w-16 h-1 bg-amber-500 mx-auto mb-10"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">Eficiencia de Remoción ECA (%)</h3>
+                        <p class="text-sm text-gray-500 mb-4">Comparativa: Filtro Simple vs. TESLAqua Nexus</p>
+                        <div class="chart-container"><canvas id="efficiencyChart"></canvas></div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-2">Generación de Microvoltaje (LTC3108)</h3>
+                        <p class="text-sm text-gray-500 mb-4">Curva de crecimiento de biopelícula en 7 días (mV)</p>
+                        <div class="chart-container"><canvas id="energyChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- IA TESLA Chat Widget -->
+    <div id="tesla-chat-button" onclick="toggleChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5zM16.5 15a.75.75 0 01.712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 010 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 01-1.422 0l-.395-1.183a1.5 1.5 0 00-.948-.948l-1.183-.395a.75.75 0 010-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0116.5 15z" clip-rule="evenodd" />
+        </svg>
+    </div>
+    <div id="tesla-chat-panel">
+        <div class="chat-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="background: white; color: #059669; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">⚡</div>
+                <div style="display: flex; flex-direction: column;">
+                    <span>IA TESLA</span>
+                    <span style="font-size: 0.65rem; font-weight: normal; background: rgba(255,255,255,0.25); padding: 2px 6px; border-radius: 10px; display: inline-block; width: max-content;">En línea</span>
+                </div>
+            </div>
+            <span class="chat-close" onclick="toggleChat()">✖</span>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="chat-msg bot">
+                ¡Hola, investigador! 🔬 Soy <strong>IA TESLA</strong>, el cerebro digital de TESLAqua Nexus. Estoy conectado a la base de datos de nuestro Anteproyecto.<br><br>¿Tienes alguna duda sobre la biorremediación, los metales pesados o la magia eléctrica de los microorganismos?
+            </div>
+            <div class="typing-indicator" id="typing-indicator">💡 IA TESLA está pensando...</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Pregúntame algo del proyecto..." onkeypress="handleChatEnter(event)">
+            <button onclick="sendMessage()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 22px; height: 22px;">
+                    <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DEL INTERRUPTOR (TOGGLE) ---
+        const toggleMode = document.getElementById('toggleMode');
+        const kidsMode = document.getElementById('kidsMode');
+        const scienceMode = document.getElementById('scienceMode');
+        const mainBody = document.getElementById('mainBody');
+        const labelKids = document.getElementById('modeLabelKids');
+        const labelScience = document.getElementById('modeLabelScience');
+        let chartsInitialized = false;
+
+        toggleMode.addEventListener('change', function () {
+            if (this.checked) {
+                // Modo Ciencia
+                kidsMode.classList.add('hidden');
+                scienceMode.classList.remove('hidden');
+                mainBody.classList.remove('bg-teal-50');
+                mainBody.classList.add('bg-slate-50');
+
+                labelKids.classList.add('opacity-50', 'text-gray-400');
+                labelKids.classList.remove('text-blue-500', 'font-bold');
+                labelScience.classList.remove('opacity-50', 'text-gray-400');
+                labelScience.classList.add('text-emerald-600', 'font-bold');
+
+                if (!chartsInitialized) {
+                    initCharts();
+                    showMod(1, document.querySelector('.module-card')); // Init module details
+                    chartsInitialized = true;
+                }
+            } else {
+                // Modo Niños
+                kidsMode.classList.remove('hidden');
+                scienceMode.classList.add('hidden');
+                mainBody.classList.add('bg-teal-50');
+                mainBody.classList.remove('bg-slate-50');
+
+                labelScience.classList.add('opacity-50', 'text-gray-400');
+                labelScience.classList.remove('text-emerald-600', 'font-bold');
+                labelKids.classList.remove('opacity-50', 'text-gray-400');
+                labelKids.classList.add('text-blue-500', 'font-bold');
+            }
+        });
+
+        // --- LÓGICA MINIJUEGO MODO NIÑOS ---
+        let energyLevel = 0;
+        function feedBacteria() {
+            if (energyLevel < 100) {
+                energyLevel += 20;
+                document.getElementById('energyBar').style.width = energyLevel + '%';
+                document.getElementById('energyText').innerText = energyLevel + '%';
+
+                const btn = document.getElementById('feedBtn');
+                btn.classList.add('scale-110');
+                setTimeout(() => btn.classList.remove('scale-110'), 150);
+
+                if (energyLevel >= 100) {
+                    document.getElementById('houseIcon').classList.remove('grayscale');
+                    document.getElementById('houseIcon').classList.add('glow');
+                    document.getElementById('riverWater').classList.remove('bg-amber-800');
+                    document.getElementById('riverWater').classList.add('bg-blue-400');
+                    document.getElementById('riverWater').innerText = 'Agua Limpia 💧';
+                    document.getElementById('successMessage').classList.remove('hidden');
+                    btn.style.display = 'none';
+                }
+            }
+        }
+
+        // --- LÓGICA MÓDULOS CIENTÍFICOS ---
+        const sciData = {
+            1: { t: "Pretratamiento Físico", d: "Retención de sólidos suspendidos mediante mallas de distinto micraje y capas de grava. Reduce la turbidez inicial para prevenir la colmatación de los biosensores posteriores." },
+            2: { t: "Biorremediación y Electrogénesis (MFC)", d: "Uso de bacterias exoelectrógenas nativas del lodo del río. Degradan materia orgánica y metales pesados en un ambiente anaeróbico, liberando electrones al ánodo de fieltro de carbono para generar microvoltaje." },
+            3: { t: "Adsorción por Carbón Activado", d: "<strong>El núcleo fisicoquímico:</strong> A diferencia de un filtro común, el carbón activado (con su inmensa porosidad superficial) actúa aquí de forma específica para adsorber iones de plomo y cadmio que la biopelícula no logró precipitar, garantizando el cumplimiento de los ECA." },
+            4: { t: "Fitorremediación y Telemetría IoT", d: "Las raíces de totora realizan un pulido final. El microvoltaje generado en la etapa 2 es amplificado por el módulo LTC3108, acumulando energía para despertar un ESP32 que mide conductividad eléctrica y envía los datos vía WiFi." }
+        };
+
+        function showMod(id, el) {
+            document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('scienceModuleDetails').innerHTML = `
+                <h3 class="text-xl font-bold text-slate-800 mb-2">${sciData[id].t}</h3>
+                <p class="text-slate-600 text-justify">${sciData[id].d}</p>
+            `;
+        }
+
+        // --- GRÁFICOS CHART.JS ---
+        function initCharts() {
+            // Dona: Contaminación
+            new Chart(document.getElementById('contaminationChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Relaves Mineros', 'Aguas Residuales', 'Agrícola', 'Otros'],
+                    datasets: [{ data: [55, 25, 15, 5], backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#64748b'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            });
+            // Barras: Eficiencia
+            new Chart(document.getElementById('efficiencyChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Turbidez', 'Plomo (Pb)', 'Cadmio (Cd)'],
+                    datasets: [
+                        { label: 'Filtro Carbón Simple (Año Pasado)', data: [60, 20, 15], backgroundColor: '#94a3b8' },
+                        { label: 'TESLAqua Nexus', data: [98, 85, 80], backgroundColor: '#0284c7' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { max: 100 } } }
+            });
+            // Línea: Energía
+            new Chart(document.getElementById('energyChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'],
+                    datasets: [{ label: 'mV', data: [50, 100, 280, 450, 520, 535, 530], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)', fill: true, tension: 0.4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- LÓGICA DE CHAT IA TESLA ---
+        const chatHistory = [];
+        
+        function toggleChat() {
+            const panel = document.getElementById('tesla-chat-panel');
+            if (panel.classList.contains('show')) {
+                panel.classList.remove('show');
+                setTimeout(() => panel.style.display = 'none', 400);
+            } else {
+                panel.style.display = 'flex';
+                // Trigger reflow
+                void panel.offsetWidth;
+                panel.classList.add('show');
+                document.getElementById('chat-input').focus();
+            }
+        }
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const inputEl = document.getElementById('chat-input');
+            const text = inputEl.value.trim();
+            if (!text) return;
+            
+            // Añadir mensaje del usuario a la UI
+            addMessageToUI(text, 'user');
+            inputEl.value = '';
+            
+            // Mostrar indicador
+            const typing = document.getElementById('typing-indicator');
+            const body = document.getElementById('chat-body');
+            typing.style.display = 'block';
+            body.appendChild(typing);
+            body.scrollTop = body.scrollHeight;
+            
+            try {
+                // Hacer POST al backend de Render
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, history: chatHistory })
+                });
+                
+                const data = await response.json();
+                
+                typing.style.display = 'none';
+                
+                if (data.reply) {
+                    addMessageToUI(data.reply, 'bot');
+                    // Guardar en el historial local
+                    chatHistory.push({ role: 'user', text });
+                    chatHistory.push({ role: 'model', text: data.reply });
+                } else {
+                    addMessageToUI("❌ Error de comunicación temporal. Intenta de nuevo.", 'bot');
+                }
+                
+            } catch (err) {
+                console.error(err);
+                typing.style.display = 'none';
+                addMessageToUI("⚠️ Fallo en el servidor de Render. Asegúrate de ejecutar el archivo server.js para que la IA funcione correctamente.", 'bot');
+            }
+        }
+
+        function addMessageToUI(text, sender) {
+            const body = document.getElementById('chat-body');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-msg ${sender}`;
+            
+            // Parse Markdown básico (negritas, y saltos de línea)
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            formattedText = formattedText.replace(/\n/g, '<br>');
+            
+            msgDiv.innerHTML = formattedText;
+            
+            // Insertamos antes del typing indicator
+            const typing = document.getElementById('typing-indicator');
+            body.insertBefore(msgDiv, typing);
+            body.scrollTop = body.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
