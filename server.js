@@ -74,7 +74,7 @@ app.post('/api/chat', async (req, res) => {
 
     // Petición a Nvidia NIM con el modelo Qwen
     const completion = await openai.chat.completions.create({
-      model: "qwen/qwen2.5-72b-instruct",
+      model: "Qwen/Qwen2.5-72B-Instruct", // Asegúrate de que este ID sea exactamente el de la web de NVIDIA (a veces es qwen/qwen-2.5-72b-instruct o simplemente qwen)
       messages: messages,
       temperature: 0.2,
       max_tokens: 1024,
@@ -87,6 +87,11 @@ app.post('/api/chat', async (req, res) => {
     console.error("Error AI TESLA (Nvidia Qwen):", error);
     res.status(500).json({ error: "Error en los circuitos de IA TESLA. Intenta de nuevo." });
   }
+});
+
+// Endpoint para que los cron-jobs despierten tu Render cada 5 minutos
+app.get('/ping', (req, res) => {
+  res.send('Servidor IA TESLA activo y respondiendo ✅');
 });
 
 const PORT = Math.max(process.env.PORT || 3000, 3000);
