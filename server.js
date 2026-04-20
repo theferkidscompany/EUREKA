@@ -74,7 +74,7 @@ app.post('/api/chat', async (req, res) => {
 
     // Petición a Nvidia NIM con el modelo Qwen
     const completion = await openai.chat.completions.create({
-      model: "Qwen/Qwen2.5-72B-Instruct", // Asegúrate de que este ID sea exactamente el de la web de NVIDIA (a veces es qwen/qwen-2.5-72b-instruct o simplemente qwen)
+      model: "qwen/qwen2.5-coder-32b-instruct", // Asegúrate de que este ID sea exactamente el de la web de NVIDIA (a veces es qwen/qwen-2.5-72b-instruct o simplemente qwen)
       messages: messages,
       temperature: 0.2,
       max_tokens: 1024,
